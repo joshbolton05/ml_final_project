@@ -1,0 +1,38 @@
+import os
+import sys
+sys.path.append('/Users/joshbolton/ml_final_project/')
+import pandas as pd
+from sklearn.model_selection import train_test_split
+from src.data.load_training_data import load_dataset
+from sklearn.metrics import roc_curve, roc_auc_score
+import matplotlib.pyplot as plt
+
+
+def split_dataset(df: pd.DataFrame):
+    # Setting X and y for training set
+    X = df.drop('Churn', axis=1)
+    y = df['Churn']
+    X_train, X_val, y_train, y_val = train_test_split(X, y, test_size=0.3, random_state=123, stratify=y)
+    return X_train, X_val, y_train, y_val
+
+def plot_roc_curve(y_true, y_score, label: str) -> float:
+    """Plot a ROC curve and return the AUC."""
+    fpr, tpr, _ = roc_curve(y_true, y_score)
+    auc = roc_auc_score(y_true, y_score)
+    plt.figure()
+    plt.plot(fpr, tpr, label=f"AUC = {auc:.3f}")
+    plt.plot([0, 1], [0, 1], "--", color="gray")
+    plt.xlabel("False Positive Rate")
+    plt.ylabel("True Positive Rate")
+    plt.title(f"ROC Curve - {label} (AUC={auc:.3f})")
+    plt.legend()
+    plt.tight_layout()
+    plt.show()
+    return auc
+
+
+if __name__ == "__main__":
+    cleaned_path = "/Users/joshbolton/ml_final_project/data/processed/cleaned_train.csv"
+    df = load_dataset(cleaned_path)
+
+    X_train, X_val, y_train, y_val = split_dataset(df)
